@@ -1,0 +1,12 @@
+source:
+  path: test/config
+  repoURL: https://github.com/yingca1/confly.git
+  targetRevision: HEAD
+workspace:
+  path: test/config
+stores:
+  - file
+  - env
+  - argv
+profiles:
+  active: "dev"

@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from "vitest";
+import confly from "../src/index";
 
-describe('should', () => {
-  it('exported', () => {
-    expect(1).toEqual(1)
-  })
-})
+describe("should", () => {
+  it("exported", () => {
+    expect(confly.get("basekey1")).toEqual("basevalue1");
+  });
+});
