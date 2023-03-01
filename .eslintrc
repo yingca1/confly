@@ -13,6 +13,6 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "ignorePatterns": ["./pnpm-lock.yaml"],
+  "ignorePatterns": ["pnpm-lock.yaml"],
   "rules": {}
 }
