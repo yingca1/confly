@@ -1,21 +1,30 @@
 import { getConflyFilePath } from "./util-files";
-import setup from "./main";
+import { initialize, updateProfile } from "./main";
 
 class Confly {
+  private static instance: Confly;
   private static activiteProfile: string;
   private configFilePath: string;
   private store: any;
 
-  constructor(options?: any) {
-    const { configPath } = options || {};
+  private constructor() {
+    this.configFilePath = getConflyFilePath();
+    // console.log(this.configFilePath, Confly.activiteProfile);
+    this.store = initialize(this.configFilePath, Confly.activiteProfile);
+  }
 
-    this.configFilePath = getConflyFilePath(configPath);
-    this.store = setup(this.configFilePath, Confly.activiteProfile);
+  public static getInstance(): Confly {
+    if (!Confly.instance) {
+      Confly.instance = new Confly();
+    }
+    return Confly.instance;
   }
 
   public setProfile(profile: string) {
-    Confly.activiteProfile = profile;
-    this.store = setup(this.configFilePath, Confly.activiteProfile);
+    if (profile !== Confly.activiteProfile) {
+      Confly.activiteProfile = profile;
+      this.store = updateProfile(this.configFilePath, Confly.activiteProfile);
+    }
   }
 
   private getJsonValue(obj: any, keyString: string) {
@@ -40,4 +49,4 @@ class Confly {
   }
 }
 
-export default new Confly();
+export default Confly.getInstance();

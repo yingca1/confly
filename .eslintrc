@@ -1,7 +1,14 @@
 {
   "extends": [
+    "plugin:yml/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended"
+  ],
+  "overrides": [
+    {
+      "files": ["*.yaml", "*.yml"],
+      "parser": "yaml-eslint-parser",
+    }
   ],
   "env": {
     "browser": true,
@@ -13,6 +20,6 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "ignorePatterns": ["pnpm-lock.yaml"],
+  "ignorePatterns": [],
   "rules": {}
 }

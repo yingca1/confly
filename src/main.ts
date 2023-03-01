@@ -4,104 +4,66 @@ import * as fs from "fs";
 import argv from "./parse-argv";
 import envs from "./parse-env";
 import Store from "./store";
+import setupGitFolder from "./parse-git";
+import ConsulKV from "./parse-consul";
 
-// parse confly profiles
-function listFoldersInDirectory(dir: string) {
-  return fs
-    .readdirSync(dir, { withFileTypes: true })
-    .filter((file) => file.isDirectory())
-    .map((file) => file.name);
-}
+function setup(
+  conflyPath: string,
+  isOnlyUpdateProfile: boolean,
+  profile?: string
+) {
+  // confly config file
+  const conflySettings: any = yaml.load(fs.readFileSync(conflyPath, "utf8"));
+  // config workspace directory
+  const workspaceHome = path.join(
+    path.dirname(conflyPath),
+    conflySettings["workspace"]["path"]
+  );
+  const activeProfile = profile || conflySettings["profiles"]["active"];
+  const store = new Store(workspaceHome);
 
-function listFolderJsonFiles(dir: string) {
-  return fs
-    .readdirSync(dir, { withFileTypes: true })
-    .filter((file) => file.isFile() && file.name.endsWith(".json"))
-    .map((file) => path.join(dir, file.name));
-}
-
-function mergeMultJsonFileToObject(files: string[]) {
-  const result = files
-    .map((file) => {
-      return JSON.parse(fs.readFileSync(file, "utf8"));
-    })
-    .reduce((acc, cur) => {
-      return { ...acc, ...cur };
-    }, {});
-  return result;
-}
-
-function listFolderJSFiles(dir: string) {
-  return fs
-    .readdirSync(dir, { withFileTypes: true })
-    .filter((file) => file.isFile() && file.name.endsWith(".js"))
-    .map((file) => path.join(dir, file.name));
-}
-
-type MergedObject = { [key: string]: any };
-
-function mergeMultJSFileToObject(filePaths: string[]): MergedObject {
-  const mergedObject: MergedObject = {};
-
-  for (const filePath of filePaths) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const module = require(filePath);
-    for (const key in module) {
-      if (module.hasOwnProperty(key)) {
-        mergedObject[key] = module[key];
+  // const storeSize = conflySettings["stores"].length.toString().length;
+  for (const [index, storeConfig] of Object.entries(conflySettings.stores)) {
+    const type = (storeConfig as any).type;
+    // console.log(`${index.padStart(storeSize, "0")}-${type}`, storeConfig);
+    if (isOnlyUpdateProfile) {
+      if (type === "git")
+        store.replace(
+          Number(index),
+          setupGitFolder(activeProfile, workspaceHome)
+        );
+    } else {
+      switch (type) {
+        case "git":
+          store.add(setupGitFolder(activeProfile, workspaceHome));
+          break;
+        case "env":
+          store.add(envs);
+          break;
+        case "argv":
+          store.add(argv);
+          break;
+        case "consul":
+          new ConsulKV(store, Number(index), storeConfig);
+          break;
+        default:
+          break;
       }
     }
   }
 
-  return mergedObject;
-}
-
-function setup(conflyPath: string, profile?: string) {
-  // confly config file
-  const doc: any = yaml.load(fs.readFileSync(conflyPath, "utf8"));
-
-  // active profile
-  const activeProfile = profile || doc["profiles"]["active"];
-  // console.log(`Active profile: ${activeProfile}`);
-
-  // config workspace directory
-  const workspaceHome = path.join(
-    path.dirname(conflyPath),
-    doc["workspace"]["path"]
-  );
-
-  const store = new Store(workspaceHome);
-  store.setArgvState(argv);
-
-  store.setEnvState(envs);
-
-  const profiles = listFoldersInDirectory(path.join(workspaceHome, "overlays"));
-
-  // console.log(profiles);
-
-  const baseJsonFiles = listFolderJsonFiles(path.join(workspaceHome, "base"));
-  const activeProfileJsonFiles = listFolderJsonFiles(
-    path.join(workspaceHome, "overlays", activeProfile)
-  );
-
-  const baseJSFiles = listFolderJSFiles(path.join(workspaceHome, "base"));
-  const activeProfileJSFiles = listFolderJSFiles(
-    path.join(workspaceHome, "overlays", activeProfile)
-  );
-
-  // console.log(`Base files: ${baseJsonFiles}`);
-  // console.log(`Active profile files: ${activeProfileFiles}`);
-
-  const state = {
-    ...mergeMultJsonFileToObject(baseJsonFiles),
-    ...mergeMultJSFileToObject(baseJSFiles),
-    ...mergeMultJsonFileToObject(activeProfileJsonFiles),
-    ...mergeMultJSFileToObject(activeProfileJSFiles),
-  };
-
-  store.setFileState(state);
-
   return store.getCombinedState();
 }
 
-export default setup;
+function initialize(conflyPath: string, profile?: string) {
+  // console.log(`initialize(${conflyPath}, ${profile})`);
+  const store = setup(conflyPath, false, profile);
+  return store;
+}
+
+function updateProfile(conflyPath: string, profile: string) {
+  const store = setup(conflyPath, true, profile);
+  return store;
+}
+
+export { initialize, updateProfile };

@@ -1,56 +1,50 @@
-/**
- * init store to save the final state in-memory.
- */
 import { dumpJsonTofile } from "./snapshot";
+import { updateObjectValue } from "./util-objects";
 
-export default class {
-  private fileState: any;
-  private literalState: any;
-  private envState: any;
-  private argvState: any;
+export default class Store {
+  private stateList: any[];
   private combinedState: any;
   private rootFolder: string;
 
   constructor(rootFolder: string) {
-    this.fileState = {};
-    this.literalState = {};
-    this.envState = {};
-    this.argvState = {};
+    this.stateList = [];
     this.combinedState = {};
     this.rootFolder = rootFolder;
   }
 
-  public setFileState(state: any) {
-    this.fileState = state;
-    this.updateCombineState();
+  public add(state: any) {
+    this.stateList.push(state);
+    this.refreshCombinedState();
   }
 
-  public setLiteralState(state: any) {
-    this.literalState = state;
-    this.updateCombineState();
+  public get(index: number) {
+    return this.stateList[index];
   }
 
-  public setEnvState(state: any) {
-    this.envState = state;
-    this.updateCombineState();
+  public replace(index: number, state: any) {
+    this.stateList[index] = state;
+    this.refreshCombinedState();
   }
 
-  public setArgvState(state: any) {
-    this.argvState = state;
-    this.updateCombineState();
+  public updateByPath(storeIndex: number, path: string, value: any) {
+    this.replace(
+      storeIndex,
+      updateObjectValue(this.get(storeIndex), path, value)
+    );
   }
 
   public getCombinedState() {
     return this.combinedState;
   }
 
-  private updateCombineState() {
-    this.combinedState = {
-      ...this.fileState,
-      ...this.literalState,
-      ...this.envState,
-      ...this.argvState,
-    };
+  private refreshCombinedState() {
+    this.combinedState = this.stateList
+      .filter((obj) => {
+        return typeof obj === "object" && obj !== null;
+      })
+      .reduce((prev, current) => {
+        return Object.assign({}, prev, current);
+      }, {});
     dumpJsonTofile(this.rootFolder, this.combinedState);
   }
 }

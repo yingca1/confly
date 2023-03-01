@@ -1,12 +1,22 @@
-source:
-  path: test/config
-  repoURL: https://github.com/yingca1/confly.git
-  targetRevision: HEAD
 workspace:
   path: test/config
 stores:
-  - file
-  - env
-  - argv
+  - type: git
+    source:
+      path: test/config
+      repoURL: https://github.com/yingca1/confly.git
+      targetRevision: HEAD
+  - type: file
+  - type: argv
+  - type: env
+  - type: consul
+    uri:
+      host: localhost
+      port: 62061
+    watchKeys:
+      - test
+      - test2
+      - test3
+      - test4
 profiles:
   active: "dev"

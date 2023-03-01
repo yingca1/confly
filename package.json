@@ -49,6 +49,7 @@
   "devDependencies": {
     "@antfu/ni": "^0.20.0",
     "@antfu/utils": "^0.7.2",
+    "@types/consul": "^0.40.0",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^18.14.1",
     "@types/yargs": "^17.0.22",
@@ -58,6 +59,7 @@
     "eslint": "^8.34.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-yml": "^1.5.0",
     "esno": "^0.16.3",
     "lint-staged": "^13.1.2",
     "pnpm": "^7.27.1",
@@ -76,6 +78,7 @@
     "*": "eslint --fix"
   },
   "dependencies": {
+    "consul": "^1.2.0",
     "js-yaml": "^4.1.0",
     "yargs": "^17.7.1"
   }
