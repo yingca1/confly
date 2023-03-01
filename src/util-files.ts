@@ -18,7 +18,7 @@ function findPackageJsonPath(startPath: string): string | null {
 
 function getConflyFilePath(configPath: string): string {
   return path.join(
-    configPath || findPackageJsonPath(__dirname) || "",
+    configPath || findPackageJsonPath(process.cwd()) || "",
     "confly.yml"
   );
 }

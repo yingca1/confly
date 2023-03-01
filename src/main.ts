@@ -5,11 +5,6 @@ import argv from "./parse-argv";
 import envs from "./parse-env";
 import Store from "./store";
 
-function getProjectRootFolder() {
-  const projectRootFolder = path.resolve(__dirname, "../");
-  return projectRootFolder;
-}
-
 // parse confly profiles
 function listFoldersInDirectory(dir: string) {
   return fs
@@ -36,17 +31,42 @@ function mergeMultJsonFileToObject(files: string[]) {
   return result;
 }
 
-function setup(conflyPath: string) {
+function listFolderJSFiles(dir: string) {
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .filter((file) => file.isFile() && file.name.endsWith(".js"))
+    .map((file) => path.join(dir, file.name));
+}
+
+type MergedObject = { [key: string]: any };
+
+function mergeMultJSFileToObject(filePaths: string[]): MergedObject {
+  const mergedObject: MergedObject = {};
+
+  for (const filePath of filePaths) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const module = require(filePath);
+    for (const key in module) {
+      if (module.hasOwnProperty(key)) {
+        mergedObject[key] = module[key];
+      }
+    }
+  }
+
+  return mergedObject;
+}
+
+function setup(conflyPath: string, profile?: string) {
   // confly config file
   const doc: any = yaml.load(fs.readFileSync(conflyPath, "utf8"));
 
   // active profile
-  const activeProfile = doc["profiles"]["active"];
+  const activeProfile = profile || doc["profiles"]["active"];
   // console.log(`Active profile: ${activeProfile}`);
 
   // config workspace directory
   const workspaceHome = path.join(
-    getProjectRootFolder(),
+    path.dirname(conflyPath),
     doc["workspace"]["path"]
   );
 
@@ -59,25 +79,26 @@ function setup(conflyPath: string) {
 
   // console.log(profiles);
 
-  const baseFiles = listFolderJsonFiles(path.join(workspaceHome, "base"));
-  const activeProfileFiles = listFolderJsonFiles(
+  const baseJsonFiles = listFolderJsonFiles(path.join(workspaceHome, "base"));
+  const activeProfileJsonFiles = listFolderJsonFiles(
     path.join(workspaceHome, "overlays", activeProfile)
   );
 
-  // console.log(`Base files: ${baseFiles}`);
+  const baseJSFiles = listFolderJSFiles(path.join(workspaceHome, "base"));
+  const activeProfileJSFiles = listFolderJSFiles(
+    path.join(workspaceHome, "overlays", activeProfile)
+  );
+
+  // console.log(`Base files: ${baseJsonFiles}`);
   // console.log(`Active profile files: ${activeProfileFiles}`);
 
-  const baseConfig = mergeMultJsonFileToObject(baseFiles);
-  const activeProfileConfig = mergeMultJsonFileToObject(activeProfileFiles);
+  const state = {
+    ...mergeMultJsonFileToObject(baseJsonFiles),
+    ...mergeMultJSFileToObject(baseJSFiles),
+    ...mergeMultJsonFileToObject(activeProfileJsonFiles),
+    ...mergeMultJSFileToObject(activeProfileJSFiles),
+  };
 
-  function mergetMultiObject(obj1: any, obj2: any) {
-    return { ...obj1, ...obj2 };
-  }
-
-  // console.log(`Base config: ${JSON.stringify(baseConfig)}`);
-  // console.log(`Active profile config: ${JSON.stringify(activeProfileConfig)}`);
-
-  const state = mergetMultiObject(baseConfig, activeProfileConfig);
   store.setFileState(state);
 
   return store.getCombinedState();
