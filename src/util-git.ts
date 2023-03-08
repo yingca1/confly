@@ -2,24 +2,23 @@ import * as fs from "fs";
 import git from "isomorphic-git";
 import http from "isomorphic-git/http/node";
 
-async function getRemoteInfo(): Promise<any> {
-  return git.getRemoteInfo({
+async function getRemoteInfo(url: string): Promise<any> {
+  return await git.getRemoteInfo({
     http,
-    url: "https://github.com/isomorphic-git/isomorphic-git",
+    url,
   });
 }
 
-async function cloneRepo() {
+async function cloneRepo(source: string, destination: string): Promise<any> {
   try {
-    await git.clone({
+    return await git.clone({
       fs,
       http,
-      dir: "./my-repo",
-      url: "https://github.com/yingca1/confly.git",
+      dir: destination,
+      url: source,
       singleBranch: true,
       depth: 1,
     });
-    console.log("Cloned successfully!");
   } catch (error) {
     console.error(error);
   }

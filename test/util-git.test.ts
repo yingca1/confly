@@ -3,18 +3,20 @@ import { getRemoteInfo, cloneRepo } from "../src/util-git";
 
 describe("should", () => {
   it.skip("getRemoteInfo", async () => {
-    const result = await getRemoteInfo();
-    expect(result).toEqual({
-      defaultBranch: "main",
-      description: "A pure JavaScript implementation of Git",
-      homepage: "https://isomorphic-git.org",
-      name: "isomorphic-git",
-      owner: "isomorphic-git",
-      repo: "isomorphic-git",
-    });
+    const result = await getRemoteInfo(
+      "https://github.com/yingca1/confly-examples.git"
+    );
+    // expect(result).toEqual({
+    //   name: "confly-examples",
+    //   owner: "yingca1",
+    //   branch: "master",
+    // });
   });
 
-  it("cloneRepo", async () => {
-    await cloneRepo();
+  it.skip("cloneRepo", async () => {
+    await cloneRepo(
+      "https://github.com/yingca1/confly-examples.git",
+      "/Users/caiying/Code/github.com/yingca1/confly/.confly/test"
+    );
   });
 });

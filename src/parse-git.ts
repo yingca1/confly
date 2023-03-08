@@ -52,15 +52,15 @@ function mergeMultJSFileToObject(filePaths: string[]): MergedObject {
   return mergedObject;
 }
 
-function setupGitFolder(activeProfile: string, workspaceHome: string): any {
-  const baseJsonFiles = listFolderJsonFiles(path.join(workspaceHome, "base"));
+function setupGitFolder(activeProfile: string, configFolder: string): any {
+  const baseJsonFiles = listFolderJsonFiles(path.join(configFolder, "base"));
   const activeProfileJsonFiles = listFolderJsonFiles(
-    path.join(workspaceHome, "overlays", activeProfile)
+    path.join(configFolder, "overlays", activeProfile)
   );
 
-  const baseJSFiles = listFolderJSFiles(path.join(workspaceHome, "base"));
+  const baseJSFiles = listFolderJSFiles(path.join(configFolder, "base"));
   const activeProfileJSFiles = listFolderJSFiles(
-    path.join(workspaceHome, "overlays", activeProfile)
+    path.join(configFolder, "overlays", activeProfile)
   );
 
   const state = {

@@ -1,7 +1,19 @@
 import * as fs from "fs";
 import * as path from "path";
 
-function findPackageJsonPath(startPath: string): string | null {
+function removeDirectoryIfExists(dirPath: string): void {
+  if (fs.existsSync(dirPath)) {
+    fs.rmSync(dirPath, { recursive: true });
+  }
+}
+
+function createDirectoryIfNotExists(dirPath: string): void {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
+
+function findPackageJsonFolderPath(startPath: string): string | null {
   let currentPath = startPath;
   while (true) {
     const packageJsonPath = path.join(currentPath, "package.json");
@@ -17,7 +29,15 @@ function findPackageJsonPath(startPath: string): string | null {
 }
 
 function getConflyFilePath(): string {
-  return path.join(findPackageJsonPath(process.cwd()) || "", "confly.yml");
+  const packageJsonFolderPath = findPackageJsonFolderPath(process.cwd());
+  if (!packageJsonFolderPath) {
+    throw new Error("package.json not found");
+  }
+  return path.join(packageJsonFolderPath, "confly.yml");
 }
 
-export { getConflyFilePath };
+export {
+  createDirectoryIfNotExists,
+  removeDirectoryIfExists,
+  getConflyFilePath,
+};

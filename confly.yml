@@ -1,22 +1,32 @@
 workspace:
-  path: test/config
+  path: .confly
 stores:
   - type: git
+    enable: true
+    priority: 3
     source:
       path: config1
       repoURL: https://github.com/yingca1/confly-examples.git
       targetRevision: HEAD
+  - type: git
+    enable: true
+    priority: 2
+    source:
+      path: config2
+      repoURL: https://github.com/yingca1/confly-examples.git
+      targetRevision: HEAD
   - type: file
-    enable: false
-    priority: -1
+    enable: 1
+    priority: 4
   - type: argv
     enable: true
-    priority: -1
+    priority: 999
   - type: env
     enable: true
-    priority: -1
+    priority: 998
   - type: consul
     enable: false
+    priority: 3
     uri:
       host: localhost
       port: 62061
