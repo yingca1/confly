@@ -4,7 +4,7 @@ import * as fs from "fs";
 import argv from "./parse-argv";
 import envs from "./parse-env";
 import Store from "./store";
-import setupGitFolder from "./parse-git";
+import { setupGitFolder } from "./parse-git";
 import ConsulKV from "./parse-consul";
 
 function setup(

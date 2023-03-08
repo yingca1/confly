@@ -3,8 +3,8 @@ workspace:
 stores:
   - type: git
     source:
-      path: test/config
-      repoURL: https://github.com/yingca1/confly.git
+      path: config1
+      repoURL: https://github.com/yingca1/confly-examples.git
       targetRevision: HEAD
   - type: file
   - type: argv

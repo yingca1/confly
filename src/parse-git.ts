@@ -73,4 +73,4 @@ function setupGitFolder(activeProfile: string, workspaceHome: string): any {
   return state;
 }
 
-export default setupGitFolder;
+export { setupGitFolder };
