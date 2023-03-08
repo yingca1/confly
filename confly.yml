@@ -7,9 +7,16 @@ stores:
       repoURL: https://github.com/yingca1/confly-examples.git
       targetRevision: HEAD
   - type: file
+    enable: false
+    priority: -1
   - type: argv
+    enable: true
+    priority: -1
   - type: env
+    enable: true
+    priority: -1
   - type: consul
+    enable: false
     uri:
       host: localhost
       port: 62061
