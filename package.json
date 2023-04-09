@@ -22,6 +22,9 @@
       "import": "./dist/index.mjs"
     }
   },
+  "bin": {
+    "confly": "dist/cli.cjs"
+  },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
