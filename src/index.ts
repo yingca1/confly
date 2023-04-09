@@ -7,12 +7,11 @@ import * as yaml from "js-yaml";
 
 class Confly {
   private static instance: Confly;
-  private static activiteProfile: string;
   private configFilePath?: string;
   private store?: Store;
 
   private constructor() {
-    // this.init();
+    // do nothing
   }
 
   public static getInstance(): Confly {
@@ -28,17 +27,10 @@ class Confly {
     );
   }
 
-  public setProfile(profile: string) {
-    if (profile !== Confly.activiteProfile) {
-      Confly.activiteProfile = profile;
-      this.store?.updateProfile(Confly.activiteProfile);
-    }
-  }
-
   public async init() {
     this.configFilePath = getConflyFilePath();
     this.setupConflyFile();
-    await this.initStore(this.configFilePath, Confly.activiteProfile);
+    await this.initStore(this.configFilePath);
   }
 
   private getJsonValue(obj: any, keyString: string) {
@@ -87,22 +79,36 @@ class Confly {
     }
   }
 
-  private async initStore(conflyPath: string, profile?: string) {
+  private async initStore(conflyPath: string) {
     // parse confly.yml, get confly settings Object
-    const conflySettings: any = yaml.load(fs.readFileSync(conflyPath, "utf8"));
+    let conflySettings: any = yaml.load(fs.readFileSync(conflyPath, "utf8"));
+
+    // get active profile
+    const activeProfile =
+      process.env.CONFLY_PROFILE ||
+      this.getJsonValue(conflySettings, "profiles:active") ||
+      "default";
+
+    if (activeProfile !== "default") {
+      conflySettings = yaml.load(
+        fs.readFileSync(
+          path.join(path.dirname(conflyPath), `confly.${activeProfile}.yml`),
+          "utf8"
+        )
+      );
+    }
+
+    console.log(`Confly Active Profile: ${activeProfile}`);
 
     // config workspace directory
     const workspaceHome = path.join(
       path.dirname(conflyPath),
-      conflySettings["workspace"]["path"]
+      this.getJsonValue(conflySettings, "workspace:path") || ".confly"
     );
     createDirectoryIfNotExists(workspaceHome);
 
-    // get active profile
-    const activeProfile = profile || conflySettings["profiles"]["active"];
-
     // initialize store
-    this.store = new Store(workspaceHome, conflySettings.stores, activeProfile);
+    this.store = new Store(workspaceHome, conflySettings.stores);
     await this.store.init();
   }
 }

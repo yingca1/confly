@@ -32,12 +32,18 @@ function backupOldSnapshotFile(snapshotFilePath: string) {
   }
 }
 
-function dumpJsonTofile(rootFolder: string, jsonObject: any) {
+function dumpJsonTofile(rootFolder: string, profile: string, jsonObject: any) {
   const snapshotFolder = path.join(rootFolder, "snapshots");
   createSnapshotFolderIfNotExists(snapshotFolder);
-  const snapshotFilePath = path.join(snapshotFolder, "snapshot.json");
+  const snapshotFilePath = path.join(snapshotFolder, `${profile}.json`);
   //   backupOldSnapshotFile(snapshotFilePath);
   fs.writeFileSync(snapshotFilePath, JSON.stringify(jsonObject, null, 2));
 }
 
-export { dumpJsonTofile };
+function dumpSnapshotToFolder(rootFolder: string, jsonObject: any) {
+  const snapshotFolder = path.join(rootFolder);
+  const snapshotFilePath = path.join(snapshotFolder, `snapshot.json`);
+  fs.writeFileSync(snapshotFilePath, JSON.stringify(jsonObject, null, 2));
+}
+
+export { dumpJsonTofile, dumpSnapshotToFolder };

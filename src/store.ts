@@ -1,14 +1,14 @@
 import path from "path";
 import argv from "./parse-argv";
 import envs from "./parse-env";
-import { dumpJsonTofile } from "./snapshot";
+import FileStoreHandler from "./parse-file";
+import HttpStoreHandler from "./parse-http";
+import { dumpJsonTofile, dumpSnapshotToFolder } from "./snapshot";
 import { updateObjectValue } from "./util-objects";
-import ConsulKV from "./parse-consul";
 import {
   createDirectoryIfNotExists,
   removeDirectoryIfExists,
 } from "./util-files";
-import GitStore from "./store-git";
 
 export default class Store {
   private stateList: any[];
@@ -16,15 +16,13 @@ export default class Store {
   private workspace: string;
   private storeRoot: string;
   private storeConfigList: any;
-  private activeProfile: string;
 
-  constructor(workspace: string, config: any, profile: string) {
+  constructor(workspace: string, config: any) {
     this.stateList = [];
     this.combinedState = {};
     this.workspace = workspace;
     this.storeRoot = path.join(workspace, "store");
     this.storeConfigList = config;
-    this.activeProfile = profile;
 
     // remove store folder if exists
     removeDirectoryIfExists(this.storeRoot);
@@ -69,49 +67,39 @@ export default class Store {
       createDirectoryIfNotExists(storeFolderPath);
 
       switch (storeConfig.type) {
-        case "git":
-          const gitStore = new GitStore(
-            storeFolderPath,
-            storeConfig,
-            this.activeProfile
+        case "file":
+          const hanlder = new FileStoreHandler(this, index);
+          const fileStore = hanlder.handleFileStore(
+            this.workspace,
+            storeConfig
           );
-          await gitStore.init();
-          const state = gitStore.refreshState();
-          this.add(state);
+          if (fileStore !== null) {
+            this.add(fileStore);
+            dumpSnapshotToFolder(storeFolderPath, fileStore);
+          }
+          break;
+        case "http":
+          const httpHanlder = new HttpStoreHandler(this, index);
+          const httpStore = await httpHanlder.handleHttpStore(
+            storeFolderPath,
+            storeConfig
+          );
+          if (httpStore !== null) {
+            this.add(httpStore);
+          }
           break;
         case "env":
           this.add(envs);
+          dumpSnapshotToFolder(storeFolderPath, envs);
           break;
         case "argv":
           this.add(argv);
-          break;
-        case "consul":
-          new ConsulKV(this, Number(index), storeConfig);
+          dumpSnapshotToFolder(storeFolderPath, argv);
           break;
         default:
           break;
       }
     }
-  }
-
-  public updateProfile(profile: string) {
-    // this.activeProfile = profile;
-    // for (const [index, storeConfig] of this.storeConfigList.entries()) {
-    //   if (storeConfig.type === "git") {
-    //     this.replace(
-    //       index,
-    //       new GitStore(
-    //         path.join(
-    //           this.storeRoot,
-    //           `${storeConfig.priority.toString().padStart(3, "0")}${index
-    //             .toString()
-    //             .padStart(3, "0")}-git`
-    //         ),
-    //         storeConfig
-    //       ).getCombinedState()
-    //     );
-    //   }
-    // }
   }
 
   public add(state: any) {
@@ -147,6 +135,6 @@ export default class Store {
       .reduce((prev, current) => {
         return Object.assign({}, prev, current);
       }, {});
-    dumpJsonTofile(this.workspace, this.combinedState);
+    dumpJsonTofile(this.workspace, "snapshot", this.combinedState);
   }
 }
