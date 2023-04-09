@@ -15,7 +15,7 @@ export default class FileStoreHandler {
   }
 
   public handleFileStore(workspace: string, storeConfig: any) {
-    const { source } = storeConfig;
+    const { source, watch } = storeConfig;
     if (source === undefined) {
       throw new Error("source is undefined");
     }
@@ -31,11 +31,13 @@ export default class FileStoreHandler {
       throw new Error(`file ${filePath} not found`);
     }
 
-    fs.watch(filePath, (eventType) => {
-      if (eventType === "change") {
-        this.store.replace(this.storeIndex, this.readJsonFileSync(filePath));
-      }
-    });
+    if (watch) {
+      fs.watch(filePath, (eventType) => {
+        if (eventType === "change") {
+          this.store.replace(this.storeIndex, this.readJsonFileSync(filePath));
+        }
+      });
+    }
 
     return this.readJsonFileSync(filePath);
   }

@@ -68,24 +68,32 @@ export default class Store {
 
       switch (storeConfig.type) {
         case "file":
-          const hanlder = new FileStoreHandler(this, index);
-          const fileStore = hanlder.handleFileStore(
-            this.workspace,
-            storeConfig
-          );
-          if (fileStore !== null) {
-            this.add(fileStore);
-            dumpSnapshotToFolder(storeFolderPath, fileStore);
+          try {
+            const hanlder = new FileStoreHandler(this, index);
+            const fileStore = hanlder.handleFileStore(
+              this.workspace,
+              storeConfig
+            );
+            if (fileStore !== null) {
+              this.add(fileStore);
+              dumpSnapshotToFolder(storeFolderPath, fileStore);
+            }
+          } catch (err) {
+            console.error((err as Error).message);
           }
           break;
         case "http":
-          const httpHanlder = new HttpStoreHandler(this, index);
-          const httpStore = await httpHanlder.handleHttpStore(
-            storeFolderPath,
-            storeConfig
-          );
-          if (httpStore !== null) {
-            this.add(httpStore);
+          try {
+            const httpHanlder = new HttpStoreHandler(this, index);
+            const httpStore = await httpHanlder.handleHttpStore(
+              storeFolderPath,
+              storeConfig
+            );
+            if (httpStore !== null) {
+              this.add(httpStore);
+            }
+          } catch (err) {
+            console.error((err as Error).message);
           }
           break;
         case "env":

@@ -37,7 +37,7 @@ export default class HttpStoreHandler {
   }
 
   public async handleHttpStore(storeFolderPath: string, storeConfig: any) {
-    const { source, interval } = storeConfig;
+    const { source, watch, interval } = storeConfig;
     if (source === undefined) {
       throw new Error("source is undefined");
     }
@@ -47,17 +47,19 @@ export default class HttpStoreHandler {
       intervalValue = 30;
     }
 
-    setInterval(async () => {
-      try {
-        const content = await this.downloadJsonFile(
-          source,
-          path.join(storeFolderPath, "snapshot.json")
-        );
-        this.store.replace(this.storeIndex, content);
-      } catch (err) {
-        console.error(err);
-      }
-    }, intervalValue * 1000);
+    if (watch) {
+      setInterval(async () => {
+        try {
+          const content = await this.downloadJsonFile(
+            source,
+            path.join(storeFolderPath, "snapshot.json")
+          );
+          this.store.replace(this.storeIndex, content);
+        } catch (err) {
+          console.error(err);
+        }
+      }, intervalValue * 1000);
+    }
 
     return await this.downloadJsonFile(
       source,
