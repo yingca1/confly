@@ -85,12 +85,10 @@ export default class Store {
         case "http":
           try {
             const httpHanlder = new HttpStoreHandler(this, index);
-            const httpStore = await httpHanlder.handleHttpStore(
-              storeFolderPath,
-              storeConfig
-            );
+            const httpStore = await httpHanlder.handleHttpStore(storeConfig);
             if (httpStore !== null) {
               this.add(httpStore);
+              dumpSnapshotToFolder(storeFolderPath, httpStore);
             }
           } catch (err) {
             console.error((err as Error).message);

@@ -10,9 +10,17 @@ export default class HttpStoreHandler {
     this.storeIndex = storeIndex;
   }
 
-  private downloadJsonFile(url: string, filename: string): Promise<void> {
+  private downloadFile(url: string, token?: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const req = https.get(url, (res) => {
+      const options: https.RequestOptions = {};
+
+      if (token) {
+        options.headers = {
+          Authorization: `Bearer ${token}`,
+        };
+      }
+
+      const req = https.get(url, options, (res) => {
         if (res.statusCode !== 200) {
           reject(
             new Error(
@@ -22,11 +30,14 @@ export default class HttpStoreHandler {
           return;
         }
 
-        const file = fs.createWriteStream(filename);
-        res.pipe(file);
-        file.on("finish", () => {
-          file.close();
-          resolve();
+        let data = "";
+
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        res.on("end", () => {
+          resolve(data);
         });
       });
 
@@ -36,8 +47,8 @@ export default class HttpStoreHandler {
     });
   }
 
-  public async handleHttpStore(storeFolderPath: string, storeConfig: any) {
-    const { source, watch, interval } = storeConfig;
+  public async handleHttpStore(storeConfig: any) {
+    const { source, watch, interval, token } = storeConfig;
     if (source === undefined) {
       throw new Error("source is undefined");
     }
@@ -50,20 +61,15 @@ export default class HttpStoreHandler {
     if (watch) {
       setInterval(async () => {
         try {
-          const content = await this.downloadJsonFile(
-            source,
-            path.join(storeFolderPath, "snapshot.json")
-          );
-          this.store.replace(this.storeIndex, content);
+          const content = await this.downloadFile(source, token);
+          this.store.replace(this.storeIndex, JSON.parse(content));
         } catch (err) {
-          console.error(err);
+          console.error((err as Error).message);
         }
       }, intervalValue * 1000);
     }
 
-    return await this.downloadJsonFile(
-      source,
-      path.join(storeFolderPath, "snapshot.json")
-    );
+    const content = await this.downloadFile(source, token);
+    return JSON.parse(content);
   }
 }
