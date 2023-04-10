@@ -52,12 +52,18 @@ function listProfiles(configFolder: string) {
     .map((file) => file.name);
 }
 
-function main(configFolder: string) {
+function synth(configFolder: string) {
   const profiles = listProfiles(configFolder);
   console.log(`profiles: ${profiles}`);
 
   const baseJsonFiles = listFolderJsonFiles(path.join(configFolder, "base"));
   const baseJSFiles = listFolderJSFiles(path.join(configFolder, "base"));
+
+  const baseState = {
+    ...mergeMultJsonFileToObject(baseJsonFiles),
+    ...mergeMultJSFileToObject(baseJSFiles),
+  };
+  dumpJsonTofile(configFolder, "base", baseState);
 
   for (const profile of profiles) {
     const activeProfileJsonFiles = listFolderJsonFiles(
@@ -68,8 +74,7 @@ function main(configFolder: string) {
     );
 
     const state = {
-      ...mergeMultJsonFileToObject(baseJsonFiles),
-      ...mergeMultJSFileToObject(baseJSFiles),
+      ...baseState,
       ...mergeMultJsonFileToObject(activeProfileJsonFiles),
       ...mergeMultJSFileToObject(activeProfileJSFiles),
     };
@@ -78,4 +83,25 @@ function main(configFolder: string) {
   }
 }
 
-export { main };
+function print(options: any) {
+  const configFolder = options.dir;
+
+  const baseSnapshot = path.join(configFolder, "snapshots", "base.json");
+
+  let state = {
+    ...mergeMultJsonFileToObject([baseSnapshot]),
+  };
+  const profile = options.profile;
+  if (profile) {
+    state = {
+      ...state,
+      ...mergeMultJsonFileToObject([
+        path.join(configFolder, "snapshots", `${profile}.json`),
+      ]),
+    };
+  }
+
+  console.log(JSON.stringify(state, null, 2));
+}
+
+export { synth, print };
