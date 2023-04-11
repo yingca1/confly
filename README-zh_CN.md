@@ -4,9 +4,9 @@
 
 [English](./README.md) | [中文](./README-zh_CN.md)
 
-## How to use
+## 使用说明
 
-### Confly Folder Structure
+### Confly 文件组织约定
 
 ```bash
 |- config
@@ -30,14 +30,14 @@
         |- staging.json
 ```
 
-1. **Basic Rule**: `[base config] + [overlay config] => snapshot`
-2. Config files currently support `json` and `js`.
+1. **基本规则**: `[base config] + [overlay config] => snapshot`
+2. 配置文件目前支持: `json`, `js`
 
-### Confly CLI Tool
+### Confly CLI 工具
 
-Using confly cli, you can manage many sets of configurations for the same project in a unified way. Place the common configurations in the `base` folder and place the different configurations in subfolders under `overlays`. By running `confly synth`, all the configuration files can be easily synthesized into snapshots, preserving the original configuration files and the synthesized results for easy rollback.
+使用 confly cli 可以将同一个项目很多套配置统一管理，将不同配置公用的配置放置在 `base` 文件夹中，将不同配置的文件放置在 `overlays` 下面的子文件中，通过 `confly synth` 可以轻易的将所有的配置文件合成到 snapshots 中，保留原始配置文件和合成后的结果，方便随时回溯过程。
 
-Managing configuration files is not an easy task, but with Confly, you can write raw files in formats such as js, yaml, and toml while preserving comments to make management easier. You can even write your own js code to customize configuration generation strategies.
+管理配置文件是一件非常不容易的事情，在 confly 中编写原始文件，计划允许使用 `js`, `yaml`, `toml` 等格式保留注释，方便管理。甚至可以自己编写 `js` 代码定制配置生成策略。
 
 ```bash
 # 1. npm install globally
@@ -77,13 +77,12 @@ main();
 
 #### confly.yml
 
-The project recognizes `confly.<profile>.yml` as the configuration file, with `confly.yml` as the default configuration.
+项目约定识别 `confly.<profile>.yml` 作为配置文件，`confly.yml` 为默认配置
 
-To set the `profile`:
+设置 `profile` 的方式:
 
-1. Set the `profile` via environment variable `CONFLY_PROFILE`
-2. Specify the `profile` in `confly.yml`
-
+1. 环境变量 `CONFLY_PROFILE` 设置 `profile`
+2. 在 `confly.yml` 中指定 `profile`
 
 ```yml
 workspace:

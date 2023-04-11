@@ -7,7 +7,7 @@
   "overrides": [
     {
       "files": ["*.yaml", "*.yml"],
-      "parser": "yaml-eslint-parser",
+      "parser": "yaml-eslint-parser"
     }
   ],
   "env": {
@@ -20,6 +20,6 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "ignorePatterns": [],
+  "ignorePatterns": ["*.md"],
   "rules": {}
 }
