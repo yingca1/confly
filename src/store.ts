@@ -36,16 +36,17 @@ export default class Store {
   }
 
   public async init() {
-    // for loop to initialize stores
     for (const [index, storeConfig] of this.storeConfigList.entries()) {
-      // check priority in store config should be number and in range 0-999
-      if (
-        typeof storeConfig.priority !== "number" ||
-        storeConfig.priority < 0 ||
-        storeConfig.priority > 999
-      ) {
+      storeConfig.priority ??= 0;
+
+      if (typeof storeConfig.priority !== "number") {
         throw new Error(
-          `Store priority should be a number in range 0-999, but got ${storeConfig.priority}`
+          `Store priority should be a number, but got ${storeConfig.priority}`
+        );
+      }
+      if (storeConfig.priority < 0 || storeConfig.priority > 999) {
+        throw new Error(
+          `Store priority should be in range 0-999, but got ${storeConfig.priority}`
         );
       }
 
